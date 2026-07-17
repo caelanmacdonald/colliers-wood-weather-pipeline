@@ -1,0 +1,2 @@
+POLL_INTERVAL = 10
+LOCATION = "Colliers Wood"

@@ -194,6 +194,8 @@ python collector.py
 
 <img width="1302" height="726" alt="image" src="https://github.com/user-attachments/assets/e1bdcfd4-986d-4fc7-b25d-15d94aa4bb38" />
 
+The dashboard presents live weather observations collected automatically every 15 minutes via GitHub Actions. Data is stored in PostgreSQL (Neon) and visualised in Power BI, including current conditions, historical trends, daily statistics, and automatically generated weather insights.
+
 ## Future Improvements
 
 Potential future enhancements include:

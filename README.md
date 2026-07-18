@@ -192,14 +192,7 @@ python collector.py
 
 ## Dashboard Preview
 
-> *(Add one or two screenshots of your completed Power BI dashboard here.)*
-
-Suggested screenshots:
-
-- Full dashboard
-- Dashboard showing trends over multiple days
-
----
+<img width="1302" height="726" alt="image" src="https://github.com/user-attachments/assets/e1bdcfd4-986d-4fc7-b25d-15d94aa4bb38" />
 
 ## Future Improvements
 

@@ -1,0 +1,45 @@
+-- Pipeline health measures for the Colliers Wood Weather Dashboard.
+-- Add these individually in Power BI Desktop.
+
+Latest Observation =
+MAX ( weather_observations[Observation DateTime] )
+
+Latest Collection =
+MAX ( weather_observations[collected_at_utc] )
+
+Minutes Since Latest Observation =
+VAR LatestTime = [Latest Observation]
+RETURN
+    IF (
+        ISBLANK ( LatestTime ),
+        BLANK (),
+        DATEDIFF ( LatestTime, UTCNOW (), MINUTE )
+    )
+
+Pipeline Status =
+VAR MinutesOld = [Minutes Since Latest Observation]
+RETURN
+    SWITCH (
+        TRUE (),
+        ISBLANK ( MinutesOld ), "No data",
+        MinutesOld <= 30, "Healthy",
+        MinutesOld <= 60, "Delayed",
+        "Stale"
+    )
+
+Observation Count =
+COUNTROWS ( weather_observations )
+
+Days Covered =
+DISTINCTCOUNT ( weather_observations[Observation Date] )
+
+Average Observations Per Day =
+DIVIDE ( [Observation Count], [Days Covered] )
+
+Latest Temperature C =
+VAR LatestTime = [Latest Observation]
+RETURN
+    CALCULATE (
+        MAX ( weather_observations[temperature_c] ),
+        weather_observations[Observation DateTime] = LatestTime
+    )

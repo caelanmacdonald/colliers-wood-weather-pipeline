@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import psycopg
@@ -17,23 +18,7 @@ if not DATABASE_URL:
     )
 
 
-CREATE_TABLE_SQL = """
-CREATE TABLE IF NOT EXISTS weather_observations (
-    id BIGSERIAL PRIMARY KEY,
-    collected_at_utc TIMESTAMPTZ NOT NULL,
-    location TEXT NOT NULL,
-    weather_time TIMESTAMPTZ NOT NULL,
-    temperature_c NUMERIC(5, 2),
-    feels_like_c NUMERIC(5, 2),
-    humidity_percent NUMERIC(5, 2),
-    precipitation_mm NUMERIC(8, 2),
-    cloud_cover_percent NUMERIC(5, 2),
-    wind_speed_kmh NUMERIC(7, 2),
-    surface_pressure_hpa NUMERIC(8, 2),
-    CONSTRAINT uq_weather_observation
-        UNIQUE (location, weather_time)
-);
-"""
+SCHEMA_PATH = Path(__file__).with_name("schema.sql")
 
 
 INSERT_WEATHER_SQL = """
@@ -73,11 +58,43 @@ DO UPDATE SET
     surface_pressure_hpa = EXCLUDED.surface_pressure_hpa;
 """
 
+INSERT_15M_WEATHER_SQL = """
+INSERT INTO weather_observations_15m (
+    collected_at_utc,
+    location,
+    weather_time,
+    temperature_c,
+    feels_like_c,
+    humidity_percent,
+    precipitation_mm,
+    wind_speed_kmh
+)
+VALUES (
+    %(collected_at_utc)s,
+    %(location)s,
+    %(weather_time)s,
+    %(temperature_c)s,
+    %(feels_like_c)s,
+    %(humidity_percent)s,
+    %(precipitation_mm)s,
+    %(wind_speed_kmh)s
+)
+ON CONFLICT (location, weather_time)
+DO UPDATE SET
+    temperature_c = EXCLUDED.temperature_c,
+    feels_like_c = EXCLUDED.feels_like_c,
+    humidity_percent = EXCLUDED.humidity_percent,
+    precipitation_mm = EXCLUDED.precipitation_mm,
+    wind_speed_kmh = EXCLUDED.wind_speed_kmh;
+"""
+
 
 def setup_database() -> None:
+    create_table_sql = SCHEMA_PATH.read_text(encoding="utf-8")
+
     with psycopg.connect(DATABASE_URL) as connection:
         with connection.cursor() as cursor:
-            cursor.execute(CREATE_TABLE_SQL)
+            cursor.execute(create_table_sql)
 
 
 def save_weather(weather: dict[str, Any]) -> None:
@@ -90,3 +107,24 @@ def save_weather(weather: dict[str, Any]) -> None:
     with psycopg.connect(DATABASE_URL) as connection:
         with connection.cursor() as cursor:
             cursor.execute(INSERT_WEATHER_SQL, row)
+
+
+def save_15m_weather(observations: list[dict[str, Any]]) -> None:
+    """Upsert a recoverable window of quarter-hour observations."""
+
+    if not observations:
+        return
+
+    collected_at_utc = datetime.now(timezone.utc)
+    rows = [
+        {
+            "collected_at_utc": collected_at_utc,
+            "location": "Colliers Wood",
+            **observation,
+        }
+        for observation in observations
+    ]
+
+    with psycopg.connect(DATABASE_URL) as connection:
+        with connection.cursor() as cursor:
+            cursor.executemany(INSERT_15M_WEATHER_SQL, rows)

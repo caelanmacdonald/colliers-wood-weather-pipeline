@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
 
   schedule:
-    - cron: "7,22,37,52 * * * *"
+    # GitHub's scheduler is best-effort. One hourly trigger is sufficient
+    # because the collector repairs the previous six hours on every run.
+    - cron: "17 * * * *"
 
 permissions:
   contents: read

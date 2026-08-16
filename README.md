@@ -8,7 +8,7 @@ The project demonstrates the complete BI lifecycle, from automated data collecti
 
 ## Project Overview
 
-Weather observations are collected automatically every 15 minutes using the Open-Meteo API. A Python ETL pipeline cleans and loads the data into a Neon PostgreSQL database, where it is consumed by Power BI for interactive analysis.
+GitHub Actions wakes the collector approximately hourly. Each run stores a full current-condition snapshot and retrieves an overlapping six-hour window of 15-minute Open-Meteo observations. The overlap allows later runs to repair scheduler delays before Neon PostgreSQL supplies the data to Power BI.
 
 The dashboard provides:
 
@@ -80,8 +80,9 @@ This project showcases practical experience with:
 
 ### Automated Data Collection
 
-- Collects weather observations every 15 minutes
-- Cloud-based scheduled execution using GitHub Actions
+- Collects a recoverable 15-minute weather series
+- Cloud-based hourly execution using GitHub Actions
+- Six-hour overlapping backfill on every run
 - Automatic insertion into PostgreSQL
 - Duplicate protection using database constraints
 
@@ -148,17 +149,29 @@ Duplicate observations are prevented using a unique constraint on:
 ## Repository Structure
 
 ```text
-weather-pipeline/
+colliers-wood-weather-pipeline/
 
+├── .github/workflows/collect-weather.yml
+├── docs/
+│   ├── architecture.md
+│   └── data-dictionary.md
+├── power-bi/
+│   ├── measures.dax
+│   ├── model.md
+│   └── screenshots/
 ├── api.py
 ├── collector.py
 ├── config.py
 ├── database.py
 ├── schema.sql
 ├── requirements.txt
+├── RESUME-HERE.md
 ├── README.md
+├── .env.example
 └── .gitignore
 ```
+
+To continue development, start with [`RESUME-HERE.md`](RESUME-HERE.md). It records the current state, the next dashboard task and the most useful operational checks.
 
 ---
 
@@ -176,10 +189,10 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Create a `.env` file:
+Copy the environment template and replace its placeholder value:
 
-```text
-DATABASE_URL=your_neon_connection_string
+```bash
+cp .env.example .env
 ```
 
 Run the collector:
@@ -192,14 +205,9 @@ python collector.py
 
 ## Dashboard Preview
 
-> *(Add one or two screenshots of your completed Power BI dashboard here.)*
+<img width="1302" height="726" alt="image" src="https://github.com/user-attachments/assets/e1bdcfd4-986d-4fc7-b25d-15d94aa4bb38" />
 
-Suggested screenshots:
-
-- Full dashboard
-- Dashboard showing trends over multiple days
-
----
+The dashboard presents live weather observations collected automatically every 15 minutes via GitHub Actions. Data is stored in PostgreSQL (Neon) and visualised in Power BI, including current conditions, historical trends, daily statistics, and automatically generated weather insights.
 
 ## Future Improvements
 

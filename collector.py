@@ -1,15 +1,18 @@
 from datetime import datetime
 
-from api import fetch_weather
+from api import fetch_recent_15m_weather, fetch_weather
 from config import LOCATION
-from database import save_weather, setup_database
+from database import save_15m_weather, save_weather, setup_database
 
 
 def collect_once() -> None:
-    """Fetch one weather observation and store it in Neon."""
+    """Store a full current snapshot and repair recent 15-minute coverage."""
 
     weather = fetch_weather()
+    recent_observations = fetch_recent_15m_weather()
+
     save_weather(weather)
+    save_15m_weather(recent_observations)
 
     now = datetime.now().strftime("%H:%M:%S")
 
@@ -20,6 +23,10 @@ def collect_once() -> None:
         f"humidity {weather['humidity_percent']}% "
         f"wind {weather['wind_speed_kmh']} km/h "
         f"pressure {weather['surface_pressure_hpa']} hPa"
+    )
+    print(
+        f"[{now}] SYNCED {len(recent_observations)} "
+        "completed 15-minute observations"
     )
 
 

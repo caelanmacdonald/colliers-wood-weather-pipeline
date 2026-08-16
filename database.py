@@ -67,7 +67,8 @@ INSERT INTO weather_observations_15m (
     feels_like_c,
     humidity_percent,
     precipitation_mm,
-    wind_speed_kmh
+    wind_speed_kmh,
+    surface_pressure_hpa
 )
 VALUES (
     %(collected_at_utc)s,
@@ -77,7 +78,8 @@ VALUES (
     %(feels_like_c)s,
     %(humidity_percent)s,
     %(precipitation_mm)s,
-    %(wind_speed_kmh)s
+    %(wind_speed_kmh)s,
+    %(surface_pressure_hpa)s
 )
 ON CONFLICT (location, weather_time)
 DO UPDATE SET
@@ -85,7 +87,8 @@ DO UPDATE SET
     feels_like_c = EXCLUDED.feels_like_c,
     humidity_percent = EXCLUDED.humidity_percent,
     precipitation_mm = EXCLUDED.precipitation_mm,
-    wind_speed_kmh = EXCLUDED.wind_speed_kmh;
+    wind_speed_kmh = EXCLUDED.wind_speed_kmh,
+    surface_pressure_hpa = EXCLUDED.surface_pressure_hpa;
 """
 
 

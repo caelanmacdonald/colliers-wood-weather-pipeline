@@ -31,3 +31,6 @@ CREATE TABLE IF NOT EXISTS weather_observations_15m (
     CONSTRAINT uq_weather_observation_15m
         UNIQUE (location, weather_time)
 );
+
+ALTER TABLE weather_observations_15m
+ADD COLUMN IF NOT EXISTS surface_pressure_hpa NUMERIC(8, 2);

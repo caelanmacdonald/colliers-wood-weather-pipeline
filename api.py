@@ -29,7 +29,8 @@ MINUTELY_15_PARAMETERS = {
         "relative_humidity_2m,"
         "apparent_temperature,"
         "precipitation,"
-        "wind_speed_10m"
+        "wind_speed_10m,"
+        "surface_pressure"
     ),
     # Every run deliberately overlaps the previous six hours. PostgreSQL's
     # unique key makes the overlap safe and allows a later run to repair gaps.
@@ -96,6 +97,7 @@ def fetch_recent_15m_weather() -> list[dict[str, Any]]:
                 ][index],
                 "precipitation_mm": payload["precipitation"][index],
                 "wind_speed_kmh": payload["wind_speed_10m"][index],
+                "surface_pressure_hpa": payload["surface_pressure"][index],
             }
         )
 
